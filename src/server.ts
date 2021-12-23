@@ -1,18 +1,18 @@
-import fastify from "fastify";
+import app from "./app";
 
-const server = fastify()
+const port = 3000;
+const address = '127.0.0.1';
 
-server.get('/', (req: any, reply: any) => {
-    reply.send('Hello world')
-})
-
-
-server.listen(3000, '127.0.0.1', (error: any, address: any) => {
-    if (error) {
-        console.log(error)
+const start = async () => {
+    try {
+        await app.listen(port, address);
+        console.log(`Server listening at ${address}`);
+    } catch (error) {
+        console.log(error);
         process.exit(0)
-    } else {
-        console.log('Server listening at ' + address)
     }
-})
+};
 
+start();
+
+//node dist\server.js
