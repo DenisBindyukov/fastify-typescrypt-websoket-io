@@ -14,5 +14,3 @@ const start = async () => {
 };
 
 start();
-
-//node dist\server.js
