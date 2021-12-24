@@ -44,4 +44,14 @@ export default async function demo(fastify: FastifyInstance) {
         reply.send({username, password, userId});
     });
 
+
+    // D = DELETE => DELETE
+
+    fastify.delete('/:userId', async (req: FastifyRequest, reply: FastifyReply) => {
+        const params: any = req.params
+        const userId = params.userId
+
+        reply.send({ok: true, userId});
+    });
+
 }
