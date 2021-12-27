@@ -1,87 +1,27 @@
 import {FastifyInstance, FastifyRequest, FastifyReply} from "fastify";
 
+import bodyScheme from '../schemas/body';
+import queryStringScheme from '../schemas/query_string';
+import headerScheme from '../schemas/header';
+import paramsScheme from '../schemas/params';
+
 export default async function schema(fastify: FastifyInstance) {
 
     fastify.post('/register', {
-        schema: {
-            body: {
-                type: 'object',
-                properties: {
-                    username: {
-                        type: 'string',
-                        minLength: 4,
-                        maxLength: 10
-                    },
-                    password: {
-                        type: 'string',
-                        minLength: 8,
-                        maxLength: 15
-                    },
-                    lastName: {
-                        type: 'string',
-                        minLength: 0,
-                        maxLength: 15
-                    },
-                    firstName: {
-                        type: 'string',
-                        minLength: 5,
-                        maxLength: 15
-                    },
-                    sex: {
-                        type: 'string',
-                        enum: ['M', 'W']
-                    },
-                    age: {
-                        type: 'integer'
-                    }
-                },
-                required: [
-                    'username',
-                    'password',
-                    'lastName',
-                    'firstName'
-                ]
-            },
-        }
+        schema: bodyScheme
     }, async (req: FastifyRequest, reply: FastifyReply) => {
         reply.send({message: 'Hello World'});
     });
 
     fastify.get('/info/:userId', {
-        schema: {
-            params: {
-                properties: {
-                    userId: {
-                        type: 'integer'
-                    }
-                }
-            }
-        }
+        schema: paramsScheme
     }, async (req: FastifyRequest, reply: FastifyReply) => {
         reply.send({message: 'User info'});
     });
 
     // ?query=xxx&limit=208&offset=0
     fastify.get('/search', {
-        schema: {
-            querystring: {
-                properties: {
-                    query: {
-                        type: 'string',
-                        minLength: 3
-                    },
-                    limit: {
-                        type: 'integer'
-                    },
-                    offset: {
-                        type: 'integer'
-                    }
-                },
-                required: [
-                    'query'
-                ]
-            }
-        }
+        schema: queryStringScheme
     }, async (req: FastifyRequest, reply: FastifyReply) => {
         reply.send({message: 'Search done!'});
     });
@@ -89,24 +29,21 @@ export default async function schema(fastify: FastifyInstance) {
 
     fastify.get('/info', {
         schema: {
-            headers: {
-                properties: {
-                    'x-fastify-token': {
-                        type: 'string'
-                    },
-                    authorization: {
-                        type: 'string'
-                    }
-                },
-                required: ['x-fastify-token']
-            }
-        }
+            headers: headerScheme
+        }, attachValidation: true
     }, async (req: FastifyRequest, reply: FastifyReply) => {
 
-        const headers: any = req.headers;
-
-        console.log(headers);
-         const token = headers['x-fastify-token'];
-        reply.send({ok: true, token});
+        if (req.validationError) {
+            console.log(req.validationError);
+            reply.code(400).send({ok: false, error: 'Bad token'})
+        } else {
+            const headers: any = req.headers;
+            if (headers['token'].length < 5) {
+                reply.code(401).send('Bad token!')
+            }
+            console.log(headers);
+            const token = headers['token'];
+            reply.send({ok: true, token});
+        }
     });
 };
